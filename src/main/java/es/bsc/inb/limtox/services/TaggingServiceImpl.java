@@ -1,3 +1,4 @@
+
 package es.bsc.inb.limtox.services;
 
 
@@ -40,11 +41,9 @@ class TaggingServiceImpl implements TaggingService {
 			taggingLog.info("Tagging chemical compounds with properties :  " +  propertiesParametersPath);
 			Properties propertiesParameters = this.loadPropertiesParameters(propertiesParametersPath);
 			taggingLog.info("Input directory with the articles to tag : " + propertiesParameters.getProperty("inputDirectory"));
-			taggingLog.info("Input directory with sentences the articles to tag : " + propertiesParameters.getProperty("inputDirectorySentences"));
 			taggingLog.info("Outup directory with the relevant articles : " + propertiesParameters.getProperty("outputDirectory"));
 			
 			String inputDirectoryPath = propertiesParameters.getProperty("inputDirectory");
-			String inputDirectorySentencesPath = propertiesParameters.getProperty("inputDirectorySentences");
 			String outputDirectoryPath = propertiesParameters.getProperty("outputDirectory");
 			
 			Integer index_id = new Integer(propertiesParameters.getProperty("index_id"));
@@ -72,10 +71,14 @@ class TaggingServiceImpl implements TaggingService {
 					String outputFilePath = outputDirectory + File.separator + fileName;
 					BufferedWriter outPutFile = new BufferedWriter(new FileWriter(outputFilePath));
 					for (String line : ObjectBank.getLineIterator(file_to_classify.getAbsolutePath(), "utf-8")) {
-						String[] data = line.split("\t");
-						String id =  data[index_id];
-						String text =  data[index_text_to_tag];
-						tagging(id, text, outPutFile, file_to_classify.getName());
+						try {
+							String[] data = line.split("\t");
+							String id =  data[index_id];
+							String text =  data[index_text_to_tag];
+							tagging(id, text, outPutFile, file_to_classify.getName());
+						}  catch (Exception e) {
+							taggingLog.error("Error tagging the document line " + line + " belongs to the file: " +  fileName,e);
+						}
 					}
 					outPutFile.close();
 					filesPrecessedWriter.write(file_to_classify.getName()+"\n");
@@ -115,14 +118,13 @@ class TaggingServiceImpl implements TaggingService {
 	private void tagging(String id, String text_to_tag, BufferedWriter output, String fileName) {
 		ChemSpot tagger = chemSpotConfig.getChemSpotTagger();
 		for (Mention mention : tagger.tag(text_to_tag)) {
-			System.out.printf("%d\t%d\t%s\t%s\t%s,\t%s%n", 
+			/*System.out.printf("%d\t%d\t%s\t%s\t%s,\t%s%n", 
 					mention.getStart(), mention.getEnd(), mention.getText(), 
 					mention.getCHID(), mention.getSource(), mention.getType().toString(), mention.getCAS(),mention.getCHEB(),mention.getDRUG(),mention.getFDA(),
-					mention.getINCH());
+					mention.getINCH());*/
 			try {
 				output.write(id + "\t" + mention.getStart() + "\t" + mention.getEnd() + "\t" +  
 							mention.getText() + "\t" + mention.getType().toString() + "\t"  +  mention.getSource() + "\t"  +  
-							
 							mention.getCHID() + "\t" + mention.getCHEB() + "\t" + mention.getCAS() + "\t" + 
 							mention.getPUBC() + "\t" + mention.getPUBS() + "\t" + mention.getINCH() + "\t" + 
 							mention.getDRUG() + "\t" + mention.getHMBD() + "\t" + mention.getKEGG() + "\t" + 

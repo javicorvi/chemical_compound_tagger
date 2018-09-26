@@ -83,8 +83,8 @@
 		    <groupId>com.chemspot</groupId>
 		    <artifactId>chemspot</artifactId>
 		    <version>2.0</version>
-			<scope>system</scope> 
-			<systemPath>${project.basedir}/lib/chemspot2.0.jar</systemPath>
+ 			<scope>system</scope> 
+ 			<systemPath>${project.basedir}/lib/chemspot2.0.jar</systemPath>
 		</dependency>
 		
 		<dependency>
